@@ -1,6 +1,8 @@
+import glob
 import os
 import optparse
 
+from pathlib import Path
 from flask import Flask, request, redirect, flash, render_template, url_for, session
 from werkzeug.utils import secure_filename
 
@@ -8,11 +10,13 @@ from db_util import DBUtil
 from parser import Parser
 from report_generator import ReportGenerator
 
-UPLOAD_FOLDER = '/Users/nishant009/Development/files'
+UPLOAD_FOLDER = str(Path('.')) + '/files'
+TEMPLATE_FOLDER = str(Path('.')) + '/templates'
 ALLOWED_EXTENSIONS = set(['csv'])
 
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+app.config['TEMPLATE_FOLDER'] = TEMPLATE_FOLDER
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 db_util = None
@@ -20,7 +24,7 @@ db_util = None
 @app.route('/', methods=['GET'])
 def index():
     results = _get_report()
-    return render_template('index.html')
+    return render_template('index.html', value = results)
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -49,16 +53,14 @@ def _process_file():
         return redirect(url_for('index'))
 
     if csv_file and _allowed_file(csv_file.filename):
-        file_name = secure_filename(csv_file.filename)
+        file_name = os.path.join(
+            UPLOAD_FOLDER,
+            secure_filename(csv_file.filename)
+        )
         try:
-            csv_file.save(
-                os.path.join(app.config['UPLOAD_FOLDER'], file_name)
-            )
+            csv_file.save(file_name)
     
-            parser = Parser(
-                db_util,
-                os.path.join(app.config['UPLOAD_FOLDER'], file_name)
-            )
+            parser = Parser(db_util, file_name)
 
             if parser.process():
                 flash(u'Success', 'success')
@@ -76,7 +78,13 @@ def _process_file():
 
 def _shutdown_server():
     session.pop('_flashes', None)
-    db_util.close()
+    try:
+        for f in Path(UPLOAD_FOLDER).glob('*.csv'):
+            os.remove(f)
+        
+        db_util.close()
+    except Exception:
+        print('Could not perform clean shutdown!')
 
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None:

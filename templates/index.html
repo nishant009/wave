@@ -1,7 +1,24 @@
 {% extends "layout.html" %}
 {% block body %}
-  <p>Click <a href="/process">here</a> to upload new CSV.</p>
-  <p>Click <a href="/shutdown">here</a> to shutdown the app.</p>
+  <p>Click <a href="{{ url_for('upload') }}">here</a> to upload new CSV.</p>
+  <p>Click <a href="{{ url_for('shutdown') }}">here</a> to shutdown the app.</p>
+  <br>
   <h1>Payroll Report</h1>
-  <p>TODO: Build report here</p>
+  <table>
+      <tr>
+        <th>Employee ID</th>
+        <th>Pay Period</th>
+        <th>Amount Paid</th>
+      </tr>
+      {% for row in value.keys() %}
+        {% for eid in value[row].keys() %}
+          {% set amount = value[row][eid]['hours'] * value[row][eid]['rate'] %}
+          <tr>
+            <td>{{ eid }}</td>
+            <td>{{ value[row][eid]['period'] }}</td>
+            <td>{{ amount }}</td>
+          </tr>
+        {% endfor %}
+      {% endfor %}
+  </table>
 {% endblock %}

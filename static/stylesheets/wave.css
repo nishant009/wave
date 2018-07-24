@@ -1,0 +1,32 @@
+table {
+    border: 3px solid black;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+thead th:nth-child(1),
+tbody th:nth-child(1) {
+    width: 30%;
+}
+
+thead th:nth-child(2),
+tbody th:nth-child(2) {
+    width: 50%;
+}
+
+thead th:nth-child(3),
+tbody th:nth-child(3) {
+    width: 30%;
+}
+
+th, td {
+    border: 1px solid black;
+}
+
+.success {
+    color: green
+}
+
+.error {
+    color: red
+}
