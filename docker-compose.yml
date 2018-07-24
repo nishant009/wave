@@ -1,0 +1,27 @@
+version: "3"
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    image: wavesql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - backend
+  app:
+    build: ./
+    image: wave
+    ports:
+      - "5000:5000"
+    networks:
+      - backend
+    depends_on:
+      - db
+    restart: on-failure
+    environment:
+      - HOST=db
+      - USER=payroll_admin
+      - PASSWORD=wave_2018
+      - DB=wave
+networks:
+  backend:
